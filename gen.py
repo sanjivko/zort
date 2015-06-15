@@ -1,6 +1,15 @@
 #!/usr/bin/python
 import re;
 import sys;
+import pprint;
+
+###########################################
+#   Global structure 
+#   that stores the tables
+#   and columns as dictionary
+###########################################
+all_tables = {};
+all_classes = {};
 
 class column:
     _name = "";
@@ -25,26 +34,65 @@ class database:
 	_tables = [];
 
 
-def process_table_line(line):
-	try:
-		res = (re.match('CREATE TABLE ([a-zA-Z]+) *', line)).group(1);
-		print "Got Table ",res
-		return True;
-	except:
-		return False;
+def write_classes_to_files():
+	for k in all_classes.keys():
+		print("class "+k+" {");
+		print("\tpublic:");
+		for l in all_classes[k]["public"].keys():
+			print "\t\t"+l+all_classes[k]["public"][l];
 
+		print("\tprivate:");
+		for l in all_classes[k]["private"].keys():
+			print "\t\t"+l+all_classes[k]["private"][l];
+		print("};");
 
-def process_col_line(line):
-	tokens = re.split('\s+', line);
-	#print tokens;
-	print "-------------------------------------";
-	print "got column", tokens[1]
-	print "got type", tokens[2]
+#################################################
+# "class name": {
+#                 public: {
+#                            #functions#,
+#                            #fucntions#,
+#                            .
+#                            .
+#                         }
+#                 private: {
+#                            var1,
+#                            var2,
+#                            .
+#                            .
+#						   }
+#               };   
+def generate_classes():
+	for k,v in all_tables.items():
+		tab_name = k;
+		print tab_name;
+		class_key = 'AW_Table_'+tab_name;
+		if (class_key not in all_classes):
+			all_classes[class_key] = {"public":{}, "private":{}};
+			for l,m in v.items():
+				#Add private variable
+				var_name = "m_col_"+l;
+				var_type = "string";
+				if (m == "character"):
+					var_type = "string";
+				if (m == "integer"):
+					var_type = "int";
+				if (m == "date"):
+					var_type = "CDate";
+				if (m == "timestamp"):
+					var_type = "string";
+				if (m == "double"):
+					var_type = "int";
 
-#####Global structure 
-#####that stores the tables
-#####and columns as dictionary
-all_tables = {};
+				all_classes[class_key]["private"][var_name] = var_type;
+
+				#Add get/set methods
+				get_fn_name = var_type+" get_col_"+l+"()";
+				set_fn_name = "void set_col_"+l+"("+var_type+" val)";
+
+				all_classes[class_key]["public"][get_fn_name] = "{return "+var_name+";}";
+				all_classes[class_key]["public"][set_fn_name] = "{"+var_name+" = val;}";
+	#pprint.pprint(all_classes);
+	write_classes_to_files();
 
 if (len(sys.argv) != 2):
 	print "File name not provided";
@@ -56,6 +104,9 @@ except Exception as e:
 	sys.exit(1);
 
 is_table_found = False;
+
+current_table = "";
+
 for line in f:
 	#print line;
 	if (re.match("\);", line)):
@@ -73,10 +124,10 @@ for line in f:
 		current_table = res;
 
 		#Insert into the all tables var
-		if res not in all_tables:
-			all_tables[res] = {};
+		if current_table not in all_tables:
+			all_tables[current_table] = {};
 		else:
-			print ("Error table:", res," Duplicate, ABORTING !!");
+			print ("Error table:(", res,") Duplicate, ABORTING !!");
 			sys.exit(1);
 		continue;
 	except:
@@ -86,10 +137,21 @@ for line in f:
 		tokens = re.split('\s+', line);
 		#print tokens;
 		print "-------------------------------------";
-		print "got column", tokens[1]
-		print "got type", tokens[2]
+		print "got column", tokens[1];
+		print "got type", tokens[2];
+		col = tokens[1];
+		dtype = tokens[2];
+
+		if (current_table in all_tables):
+			if (col in all_tables[current_table]):
+				print "Error dupliate column name(", col,") in table (", current_table,")"
+			else:
+				all_tables[current_table][col] = dtype;
+		else:
+			print "Table name (",current_table,") not found";
 
 
-
+#pprint.pprint(all_tables);
+generate_classes();
 
 
