@@ -5,5 +5,5 @@ CREATE TABLE films (
    date_prod   date, 
    kind        varchar (10), 
    len         interval hour to minute 
-);"
+);
 
