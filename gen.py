@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import re;
+import sys;
 
 class column:
     _name = "";
@@ -40,22 +41,53 @@ def process_col_line(line):
 	print "got column", tokens[1]
 	print "got type", tokens[2]
 
+#####Global structure 
+#####that stores the tables
+#####and columns as dictionary
+all_tables = {};
 
-f = open('dbFile.sql', "r");
+if (len(sys.argv) != 2):
+	print "File name not provided";
+	sys.exit();
+try:
+	f = open(sys.argv[1], "r");
+except Exception as e:
+	print("Error:", str(e));
+	sys.exit(1);
 
 is_table_found = False;
 for line in f:
-	print line;
-	if (process_table_line(line)):
+	#print line;
+	if (re.match("\);", line)):
+		#End of table;
+		is_table_found = False;
+		continue;
+
+	try:
+		res = (re.match('CREATE TABLE ([a-zA-Z_]+) *', line)).group(1);
+		print "Got Table ",res;
 		if (is_table_found):
 			print "Error in parsing";
-			sys.exit();
+			sys.exit(1);
 		is_table_found = True;
-	elif (is_table_found):
-		if (re.match("\);", line)):
-			is_table_found = False;
+		current_table = res;
+
+		#Insert into the all tables var
+		if res not in all_tables:
+			all_tables[res] = {};
 		else:
-			process_col_line(line);
+			print ("Error table:", res," Duplicate, ABORTING !!");
+			sys.exit(1);
+		continue;
+	except:
+		pass;
+
+	if (is_table_found):
+		tokens = re.split('\s+', line);
+		#print tokens;
+		print "-------------------------------------";
+		print "got column", tokens[1]
+		print "got type", tokens[2]
 
 
 
