@@ -4,7 +4,8 @@ Will try out for psql dumps and then implement for other database types.
 
 
 Command:
-./gen.py <input-db-file-name>
+./gen.py "input-db-file-name"
+
 
 e.g
 > ./gen.py dbFile.sql 
