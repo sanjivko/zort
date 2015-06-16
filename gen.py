@@ -2,6 +2,8 @@
 import re;
 import sys;
 import pprint;
+import os;
+import shutil;
 
 ###########################################
 #   Global structure 
@@ -35,16 +37,38 @@ class database:
 
 
 def write_classes_to_files():
-	for k in all_classes.keys():
-		print("class "+k+" {");
-		print("\tpublic:");
-		for l in all_classes[k]["public"].keys():
-			print "\t\t"+l+all_classes[k]["public"][l];
+	dir_name = "classes";
+	if os.path.exists(dir_name):
+		#dir_name = raw_input('classes dir already exists, enter another name:');
+		shutil.rmtree(dir_name);
+	os.makedirs(dir_name);
 
-		print("\tprivate:");
+	for k in all_classes.keys():
+		print "Creating Class:"+k;
+		f = open(dir_name+"/"+k+".hpp", "w");
+		f.write('#ifndef __'+k+'_HPP__');
+		f.write("\n");
+		f.write('#define __'+k+'_HPP__');
+		f.write("\n");
+
+		f.write("class "+k+" {");
+		f.write("\n");
+
+		f.write("\tpublic:");
+		f.write("\n");
+		for l in all_classes[k]["public"].keys():
+			f.write("\t\t"+l+all_classes[k]["public"][l]);
+			f.write("\n");
+
+		f.write("\tprivate:");
+		f.write("\n");
 		for l in all_classes[k]["private"].keys():
-			print "\t\t"+l+all_classes[k]["private"][l];
-		print("};");
+			f.write ("\t\t"+all_classes[k]["private"][l]+"  "+l);
+			f.write("\n");
+		f.write("};");
+		f.write("\n");
+		f.write("#endif");
+		f.write("\n");
 
 #################################################
 # "class name": {
