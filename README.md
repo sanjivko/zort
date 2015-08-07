@@ -1,11 +1,12 @@
 # zort
-The aim is to generate C++ classes representing database tables. The input to the script is a database dump file generated from pg_dump. 
-Will try out for psql dumps and then implement for other database types.
+The objective is the abstract database queries from programming and make it easier to migrate.Writing queries in C++ code poses delays during migration of databases which needs to be handled in a seamless way.
 
+I want to use the power of C++ strong typing to ensure queries generated are syntactically correct. 
 
-Command:
-./gen.py "input-db-file-name"
+To give an idea of how queries should be wriiten with this library, here are few examples. 
 
+"select pallet_id from cabinets where ((A=B and C=D) OR (E=F))"
+q.select(CTable::getInstance()->m_col_pallet_id)->where(CFilter("A=B").AND("C=D").OR("E=F"))
 
-e.g
-> ./gen.py dbFile.sql 
+There are various features that need to be added to this, e.g joins, subquery, etc. The idea is to make the api easy to understand and robust. 
+
