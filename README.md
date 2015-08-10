@@ -6,6 +6,7 @@ I want to use the power of C++ strong typing to ensure queries generated are syn
 To give an idea of how queries should be wriiten with this library, here are few examples. 
 
 "select pallet_id from cabinets where ((A=B and C=D) OR (E=F))"
+
 q.select(CTable::getInstance()->m_col_pallet_id)->where(CFilter("A=B").AND("C=D").OR("E=F"))
 
 There are various features that need to be added to this, e.g joins, subquery, etc. The idea is to make the api easy to understand and robust. 
